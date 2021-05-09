@@ -74,7 +74,7 @@ function main() {
               console.log(util.inspect(rec, false, null));
               return zesty.instance.publishItem(
                 ZESTY_MODEL_ZUID,
-                rec.data[0].ZUID,
+                rec.data.ZUID,
                 1 // We avoid make a request to look the version because we know it's one as we just created the record
               );
             })
