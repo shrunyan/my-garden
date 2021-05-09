@@ -1,0 +1,15 @@
+{
+  "name": "my-garden",
+  "version": "1.0.0",
+  "author": "Stuart Runyan<shrunyan@gmail.com>",
+  "license": "Apache-2.0",
+  "description": "",
+  "main": "camera.js",
+  "scripts": {
+    "start": "node camera.js"
+  },
+  "dependencies": {
+    "@zesty-io/sdk": "^0.1.1",
+    "dotenv": "^9.0.1"
+  }
+}
