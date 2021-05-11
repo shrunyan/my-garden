@@ -102,7 +102,7 @@ async function main() {
         }
       }
     );
-  }, 15000); // Take a photo every 15 seconds
+  }, 60000); // Take a photo every minute
 }
 
 // Start the function
