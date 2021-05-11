@@ -17,11 +17,20 @@ const ZESTY_BIN_ZUID = process.env.ZESTY_BIN_ZUID; // Change this to your media 
 const ZESTY_MODEL_ZUID = process.env.ZESTY_MODEL_ZUID; // Change this to your model ZUID
 const ZESTY_USER_ZUID = process.env.ZESTY_USER_ZUID; // Change this to your user ZUID
 
-function main() {
+async function main() {
   console.log("CAMERA ON");
 
-  // Instantiate sdk instance with instance ZUID and access token
-  const zesty = new SDK(ZESTY_INSTANCE_ZUID, ZESTY_ACCESS_TOKEN);
+  const auth = new SDK.Auth();
+  const session = await auth.login(
+    process.env.ZESTY_USER_EMAIL,
+    process.env.ZESTY_USER_PASSWORD
+  );
+
+  if (!session.token) {
+    throw new Error(JSON.stringify(session));
+  }
+
+  const zesty = new SDK(process.env.ZESTY_INSTANCE_ZUID, session.token);
 
   setInterval(() => {
     // Unix timestamp. Time since in milliseconds since 1970.
@@ -48,16 +57,7 @@ function main() {
           zesty.media
             .createFile(ZESTY_BIN_ZUID, stream, { title, fileName })
             .then((file) => {
-              // For debugging
-              // Running this while in our garden would consume alot of memory overtime
-              // Which could crash the PI Zero
-              console.log(util.inspect(file, false, null));
-
-              // Maintain promise chain
-              return file;
-            })
-            // Create headless data model record
-            .then((file) => {
+              // Create headless data model record
               return zesty.instance.createItem(ZESTY_MODEL_ZUID, {
                 data: {
                   title: file.data[0].title,
@@ -69,14 +69,24 @@ function main() {
                 },
               });
             })
-            // Publish record so it is live
             .then((rec) => {
-              console.log(util.inspect(rec, false, null));
+              // Publish record so it is live
               return zesty.instance.publishItem(
                 ZESTY_MODEL_ZUID,
                 rec.data.ZUID,
                 1 // We avoid make a request to look the version because we know it's one as we just created the record
               );
+            })
+            .then((file) => {
+              // For debugging
+              // Running this while in our garden would consume alot of memory overtime
+              // Which could crash the PI Zero
+              // console.log(util.inspect(file, false, null));
+
+              // FIXME: Can not publish with access tokens!!!
+
+              // Maintain promise chain
+              return file;
             })
             .catch((err) => {
               console.error(err);
@@ -92,7 +102,7 @@ function main() {
         }
       }
     );
-  }, 5000); // Take a photo every 15 seconds
+  }, 15000); // Take a photo every 15 seconds
 }
 
 // Start the function
